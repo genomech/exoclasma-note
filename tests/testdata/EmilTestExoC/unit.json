@@ -1,0 +1,254 @@
+{
+    "ID": "EmilTestExoC",
+    "Description": "Emil Viesna's Exo-C Library for ExoClasma Test",
+    "ParentDir": "testdata",
+    "Input": [
+        {
+            "Files": {
+                "R1": "/storage2/dreamworld/NGS_Data/ExoC/Sources/EmilExoC/P113_R1.fastq.gz",
+                "R2": "/storage2/dreamworld/NGS_Data/ExoC/Sources/EmilExoC/P113_R2.fastq.gz",
+                "Unpaired": null
+            },
+            "RG": {
+                "Sample": "Emil",
+                "Library": "001",
+                "Platform": "ILLUMINA",
+                "Instrument": "300114157",
+                "Lane": "4",
+                "Barcode": "NNNNNN"
+            },
+            "Adapter": {
+                "Name": "illumina",
+                "R1": "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
+                "R2": "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+            }
+        }
+    ],
+    "Reference": {
+        "GenomeInfo": {
+            "name": "hg19_canonical",
+            "description": "GRCh37 containing only 'canonical' (1-22, X, Y) chromosomes, without patches",
+            "created": "2022-08-25T18:53:54.900201",
+            "fasta": "hg19_canonical.fa",
+            "chrom.sizes": "hg19_canonical.chrom.sizes",
+            "samtools.faidx": "hg19_canonical.fa.fai",
+            "bed": "hg19_canonical.bed",
+            "gatk.dict": "hg19_canonical.dict",
+            "juicer.rs": {
+                "HindIII": {
+                    "map": "juicer.rs/hg19_canonical.rs.HindIII.txt",
+                    "site": "AAGCTT"
+                },
+                "DpnII": {
+                    "map": "juicer.rs/hg19_canonical.rs.DpnII.txt",
+                    "site": "GATC"
+                },
+                "MboI": {
+                    "map": "juicer.rs/hg19_canonical.rs.MboI.txt",
+                    "site": "GATC"
+                },
+                "Sau3AI": {
+                    "map": "juicer.rs/hg19_canonical.rs.Sau3AI.txt",
+                    "site": "GATC"
+                },
+                "Arima": {
+                    "map": "juicer.rs/hg19_canonical.rs.Arima.txt",
+                    "site": "GA(([ACGT]T)|(TC))"
+                }
+            },
+            "capture": {
+                "KAPA_HyperExome": {
+                    "name": "KAPA_HyperExome",
+                    "description": null,
+                    "created": "2022-09-05T14:24:32.554097",
+                    "capture": "capture/KAPA_HyperExome/KAPA_HyperExome.capture.bed",
+                    "not.capture": "capture/KAPA_HyperExome/KAPA_HyperExome.not.capture.bed"
+                }
+            },
+            "chrom.sizes.dict": {
+                "chr1": 249250621,
+                "chr2": 243199373,
+                "chr3": 198022430,
+                "chr4": 191154276,
+                "chr5": 180915260,
+                "chr6": 171115067,
+                "chr7": 159138663,
+                "chr8": 146364022,
+                "chr9": 141213431,
+                "chr10": 135534747,
+                "chr11": 135006516,
+                "chr12": 133851895,
+                "chr13": 115169878,
+                "chr14": 107349540,
+                "chr15": 102531392,
+                "chr16": 90354753,
+                "chr17": 81195210,
+                "chr18": 78077248,
+                "chr19": 59128983,
+                "chr20": 63025520,
+                "chr21": 48129895,
+                "chr22": 51304566,
+                "chrX": 155270560,
+                "chrY": 59373566
+            },
+            "annovar_alias": "hg19"
+        },
+        "Capture": "KAPA_HyperExome",
+        "GenomeDir": "/dreamworld/databases/hg19_canonical",
+        "BQSR_dbSNP": "/storage2/databases/dbsnp_bqsr.vcf.gz"
+    },
+    "Config": {
+        "Threads": 10,
+        "RemoveTempFiles": true,
+        "JavaOptions": {
+            "SortSam": "-Xmx3G",
+            "MergeSamFiles": "-Xmx3G",
+            "MarkDuplicates": "-Xmx20G -XX:+UseParallelGC -XX:ParallelGCThreads=2",
+            "BaseRecalibrator": "-Xmx3G -XX:+UseParallelGC -XX:ParallelGCThreads=2",
+            "ApplyBQSR": "-Xmx3G -XX:+UseParallelGC -XX:ParallelGCThreads=2",
+            "HaplotypeCaller": "-Xmx3G",
+            "GenotypeGVCFs": "-Xmx3G",
+            "MergeVcfs": "-Xmx3G"
+        }
+    },
+    "Started": "2022-10-20T19:27:38.632684",
+    "OutputDir": "testdata/EmilTestExoC",
+    "Output": {
+        "PrimaryBAM": "_temp.EmilTestExoC.primary.bam",
+        "FlagStat": {
+            "QC-passed reads": {
+                "total": 43541257,
+                "primary": 33188182,
+                "secondary": 0,
+                "supplementary": 10353075,
+                "duplicates": 0,
+                "primary duplicates": 0,
+                "mapped": 43522017,
+                "mapped %": 99.96,
+                "primary mapped": 33168942,
+                "primary mapped %": 99.94,
+                "paired in sequencing": 33188182,
+                "read1": 16594091,
+                "read2": 16594091,
+                "properly paired": 19685496,
+                "properly paired %": 59.31,
+                "with itself and mate mapped": 33157340,
+                "singletons": 11602,
+                "singletons %": 0.03,
+                "with mate mapped to a different chr": 4633910,
+                "with mate mapped to a different chr (mapQ >= 5)": 4264695
+            },
+            "QC-failed reads": {
+                "total": 0,
+                "primary": 0,
+                "secondary": 0,
+                "supplementary": 0,
+                "duplicates": 0,
+                "primary duplicates": 0,
+                "mapped": 0,
+                "mapped %": null,
+                "primary mapped": 0,
+                "primary mapped %": null,
+                "paired in sequencing": 0,
+                "read1": 0,
+                "read2": 0,
+                "properly paired": 0,
+                "properly paired %": null,
+                "with itself and mate mapped": 0,
+                "singletons": 0,
+                "singletons %": null,
+                "with mate mapped to a different chr": 0,
+                "with mate mapped to a different chr (mapQ >= 5)": 0
+            }
+        },
+        "DuplessCoordBAM": "EmilTestExoC.coordinate_sorted.bam",
+        "DuplessQueryBAM": "EmilTestExoC.query_sorted.bam",
+        "DuplessMetrics": {
+            "LIB-Emil-001": {
+                "UNPAIRED_READS_EXAMINED": 11602,
+                "READ_PAIRS_EXAMINED": 16578670,
+                "SECONDARY_OR_SUPPLEMENTARY_RDS": 10353075,
+                "UNMAPPED_READS": 19240,
+                "UNPAIRED_READ_DUPLICATES": 2221,
+                "READ_PAIR_DUPLICATES": 806908,
+                "READ_PAIR_OPTICAL_DUPLICATES": 0,
+                "PERCENT_DUPLICATION": 0.048721,
+                "ESTIMATED_LIBRARY_SIZE": 164739787
+            }
+        },
+        "CoverageStats": {
+            "Capture DP>10 [%]": 91.88853999999999,
+            "Capture Average": 50.45147739999999,
+            "NotCapture Average": 0.7989206999999999,
+            "Enrichment Average": 63.14954337770944,
+            "Capture DP0 [%]": 0.14059000000000002,
+            "NotCapture DP0 [%]": 71.78943
+        },
+        "Contigs": [
+            "chr1",
+            "chr2",
+            "chr3",
+            "chr4",
+            "chr5",
+            "chr6",
+            "chr7",
+            "chr8",
+            "chr9",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13",
+            "chr14",
+            "chr15",
+            "chr16",
+            "chr17",
+            "chr18",
+            "chr19",
+            "chr20",
+            "chr21",
+            "chr22",
+            "chrX",
+            "chrY"
+        ],
+        "Cutadapt": {
+            "0": {
+                "CutadaptR1": "_temp.EmilTestExoC.0.R1.cutadapt.fastq.gz",
+                "CutadaptR2": "_temp.EmilTestExoC.0.R2.cutadapt.fastq.gz",
+                "CutadaptUnpaired": null,
+                "StatsUnpaired": null,
+                "StatsPaired": {
+                    "status": "WARN",
+                    "in_reads": 16594091,
+                    "in_bp": 5310109120,
+                    "too_short": 0,
+                    "too_long": 0,
+                    "too_many_n": 0,
+                    "out_reads": 16594091,
+                    "w/adapters": 1049779,
+                    "qualtrim_bp": 0,
+                    "out_bp": 2483990748,
+                    "w/adapters2": 50278,
+                    "qualtrim2_bp": 0,
+                    "out2_bp": 2820303124
+                },
+                "FastQC": "EmilTestExoC.0.fastqc.html"
+            }
+        },
+        "RecalibratedBAM": "_temp.EmilTestExoC.recalibrated.bam",
+        "VCF": "EmilTestExoC.vcf.gz",
+        "gVCF": "EmilTestExoC.g.vcf.gz",
+        "AnnovarVCF": "_temp.EmilTestExoC.annovar.vcf.gz"
+    },
+    "Stage": [
+        "Cutadapt",
+        "BWA",
+        "MarkDuplicates",
+        "CoverageStats",
+        "RemoveTempFiles",
+        "BaseRecalibration",
+        "HaplotypeCalling",
+        "RemoveTempFiles2",
+        "Annovar"
+    ],
+    "AnnovarFolder": "/home/thousandtowers/annovar/annovar"
+}
