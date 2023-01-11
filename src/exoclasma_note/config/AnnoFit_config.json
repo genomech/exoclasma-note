@@ -1,4 +1,5 @@
 {
+	"AnnofitChunkSize": 300000,
 	"GeneNames": [
 		"Gene.refGene",
 		"Gene.knownGene"

@@ -1,4 +1,176 @@
-from SharedFunctions import *
+__version__ = "0.9.0"
+
+from contextlib import contextmanager
+from copy import deepcopy as dc
+from glob import glob
+from multiprocessing import cpu_count, Pool
+from pandarallel import pandarallel #
+from typing import Union
+import argparse
+import bz2
+import base64
+import datetime
+import functools
+import glob
+import gzip
+import io
+import json
+import logging
+import math
+import numpy #
+import os
+import pandas #
+import re
+import subprocess
+import sys
+import tabix #
+import tempfile
+import time
+import warnings
+
+## ------======| LOGGING |======------
+
+def DefaultLogger(
+		LogFileName: str,
+		Level: int = logging.DEBUG) -> logging.Logger:
+	
+	# Format
+	Formatter = "%(asctime)-30s%(levelname)-13s%(funcName)-25s%(message)s"
+	
+	# Compose logger
+	Logger = logging.getLogger("default_logger")
+	logging.basicConfig(level=Level, format=Formatter)
+	
+	# Add log file
+	Logger.handlers = []
+	LogFile = logging.FileHandler(LogFileName)
+	LogFile.setLevel(Level)
+	LogFile.setFormatter(logging.Formatter(Formatter))
+	Logger.addHandler(LogFile)
+	
+	# Return
+	return Logger
+
+## ------======| I/O |======------
+
+def SaveJSON(Data: list, FileName: str) -> None: json.dump(Data, open(FileName, 'w'), indent=4, ensure_ascii=False)
+
+def GzipCheck(FileName: str) -> bool: return open(FileName, 'rb').read(2).hex() == "1f8b"
+
+def Bzip2Check(FileName: str) -> bool: return open(FileName, 'rb').read(3).hex() == "425a68"
+
+def OpenAnyway(FileName: str,
+		Mode: str,
+		Logger: logging.Logger):
+	
+	try:
+		IsGZ = GzipCheck(FileName=FileName)
+		IsBZ2 = Bzip2Check(FileName=FileName)
+		return gzip.open(FileName, Mode) if IsGZ else (bz2.open(FileName, Mode) if IsBZ2 else open(FileName, Mode))
+	except OSError as Err:
+		ErrorMessage = f"Can't open the file '{FileName}' ({Err})"
+		Logger.error(ErrorMessage)
+		raise OSError(ErrorMessage)
+
+def GenerateFileNames(
+		Unit: dict,
+		Options: dict) -> dict:
+	
+	Unit['OutputDir'] = os.path.join(Options["PoolDir"], Unit['ID'])
+	IRs = os.path.join(Unit['OutputDir'], "IRs")
+	FileNames = {
+		"OutputDir": Unit['OutputDir'],
+		"IRs": IRs,
+		"Log": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.pipeline_log.txt"),
+		"PrimaryBAM": os.path.join(IRs, f"{Unit['ID']}.primary.bam"),
+		"PrimaryStats": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.primary_stats.txt"),
+		"DuplessBAM": os.path.join(IRs, f"{Unit['ID']}.dupless.bam"),
+		"DuplessMetrics": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.md_metrics.txt"),
+		"RecalBAM": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.final.bam"),
+		"CoverageStats": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.coverage.txt"),
+		"VCF": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.unfiltered.vcf"),
+		"AnnovarTable": os.path.join(IRs, f"{Unit['ID']}.annovar.tsv"),
+		"Gff3Table": os.path.join(IRs, f"{Unit['ID']}.curebase.tsv"),
+		"FilteredXLSX": os.path.join(Unit['OutputDir'], f"{Unit['ID']}.AnnoFit.xlsx")
+	}
+	return FileNames
+
+## ------======| THREADING |======------
+
+@contextmanager
+def Threading(Name: str,
+		Logger: logging.Logger,
+		Threads: int) -> None:
+	
+	# Timestamp
+	StartTime = time.time()
+	
+	# Pooling
+	pool = Pool(Threads)
+	yield pool
+	pool.close()
+	pool.join()
+	del pool
+	
+	# Timestamp
+	Logger.info(f"{Name} finished on {str(Threads)} threads, summary time - %s" % (SecToTime(time.time() - StartTime)))
+
+## ------======| SUBPROCESS |======------
+
+def SimpleSubprocess(
+		Name: str,
+		Command: str,
+		CheckPipefail: bool = False,
+		Env: Union[str, None] = None,
+		AllowedCodes: list = []) -> None:
+	
+	# Timestamp
+	StartTime = time.time()
+	
+	# Compose command
+	Command = (f"source {Env}; " if Env is not None else f"") + (f"set -o pipefail; " if CheckPipefail else f"") + Command
+	logging.debug(Command)
+	
+	# Shell
+	Shell = subprocess.Popen(Command, shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	Stdout, Stderr = Shell.communicate()
+	if Shell.returncode != 0 and Shell.returncode not in AllowedCodes:
+		ErrorMessages = [
+			f"Command '{Name}' has returned non-zero exit code [{str(Shell.returncode)}]",
+			f"Command: {Command}",
+			f"Details: {Stderr.decode('utf-8')}"
+			]
+		for line in ErrorMessages: logging.error(line)
+		raise OSError(f"{ErrorMessages[0]}\n{ErrorMessages[2]}")
+	if Shell.returncode in AllowedCodes: logging.warning(f"Command '{Name}' has returned ALLOWED non-zero exit code [{str(Shell.returncode)}]")
+	
+	# Timestamp
+	logging.info(f"{Name} - %s" % (SecToTime(time.time() - StartTime)))
+	
+	# Return
+	return Stdout[:-1]
+
+## ------======| MISC |======------
+
+def SecToTime(Sec: float) -> str: return str(datetime.timedelta(seconds=int(Sec)))
+
+def MultipleTags(Tag: str, List: list, Quoted: bool = True) -> str: return ' '.join([(f"{Tag} \"{str(item)}\"" if Quoted else f"{Tag} {str(item)}") for item in List])
+
+def PrepareGenomeBED(
+		Reference: str,
+		GenomeBED: str,
+		Logger: logging.Logger) -> None:
+	
+	MODULE_NAME = "PrepareGenomeBED"
+	
+	# Processing
+	SimpleSubprocess(
+		Name = f"{MODULE_NAME}.Create",
+		Command = "awk 'BEGIN {FS=\"\\t\"}; {print $1 FS \"0\" FS $2}' \"" + Reference + ".fai\" > \"" + GenomeBED + "\"",
+		Logger = Logger)
+
+
+logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.DEBUG)
 
 # ------======| ANNOVAR |======------
 
@@ -8,7 +180,6 @@ def ANNOVAR(
 		DBFolder: str,
 		AnnovarFolder: str,
 		GenomeAssembly: str,
-		Logger: logging.Logger,
 		Databases: list = [],
 		GFF3List: list = [],
 		Threads: int = cpu_count()) -> None:
@@ -18,7 +189,7 @@ def ANNOVAR(
 	assert bool(Databases) != bool(GFF3List), f"Either Databases or GFF3 files must be defined"
 	
 	# Logging
-	for line in [f"Input VCF: {InputVCF}", f"Output TSV: {OutputTSV}", f"Genome Assembly: {GenomeAssembly}", f"Databases Dir: {DBFolder}"] + ([] if not Databases else [f"Databases: {'; '.join([(item['Protocol'] + '[' + item['Operation'] + ']') for item in Databases])}"]) + ([] if not GFF3List else [f"Databases: GFF3, {len(GFF3List)} items [r]"]): Logger.info(line)
+	for line in [f"Input VCF: {InputVCF}", f"Output TSV: {OutputTSV}", f"Genome Assembly: {GenomeAssembly}", f"Databases Dir: {DBFolder}"] + ([] if not Databases else [f"Databases: {'; '.join([(item['Protocol'] + '[' + item['Operation'] + ']') for item in Databases])}"]) + ([] if not GFF3List else [f"Databases: GFF3, {len(GFF3List)} items [r]"]): logging.info(line)
 	
 	with tempfile.TemporaryDirectory() as TempDir:
 		
@@ -33,17 +204,14 @@ def ANNOVAR(
 		# Processing
 		SimpleSubprocess(
 			Name = f"{MODULE_NAME}.TempVCF",
-			Command = f"cp \"{InputVCF}\" \"{TempVCF}\"",
-			Logger = Logger)
+			Command = f"zcat \"{InputVCF}\" > \"{TempVCF}\"")
 		SimpleSubprocess(
 			Name = f"{MODULE_NAME}.Annotation",
 			Command = f"perl \"{TableAnnovarPath}\" \"{TempVCF}\" \"{DBFolder}\" --buildver {GenomeAssembly} --protocol {Protocol} --operation {Operation} {GFFs} --remove --vcfinput --thread {Threads}",
-			Logger = Logger,
 			AllowedCodes = [25])
 		SimpleSubprocess(
 			Name = f"{MODULE_NAME}.CopyTSV",
-			Command = f"cp \"{AnnotatedTXT}\" \"{OutputTSV}\"",
-			Logger = Logger)
+			Command = f"cp \"{AnnotatedTXT}\" \"{OutputTSV}\"")
 
 # ------======| CUSTOM REGION-BASED ANNOTATIONS |======------
 
@@ -55,7 +223,6 @@ def Tsv2Gff3(
 		EndCol: str,
 		OutputGFF3: str,
 		Reference: str,
-		Logger: logging.Logger,
 		Threads: int) -> None:
 	
 	MODULE_NAME = "Tsv2Gff3"
@@ -63,7 +230,7 @@ def Tsv2Gff3(
 	pandarallel.initialize(nb_workers=Threads, verbose=1)
 	
 	# Logging
-	for line in [f"Name: {dbName}", f"Input TSV db: {InputTSV}", f"Output GFF3: {OutputGFF3}"]: Logger.info(line)
+	for line in [f"Name: {dbName}", f"Input TSV db: {InputTSV}", f"Output GFF3: {OutputGFF3}"]: logging.info(line)
 	
 	# Options
 	AnchorCols = [ChromCol, StartCol, EndCol]
@@ -79,13 +246,13 @@ def Tsv2Gff3(
 	
 	# Filter & sort intervals by reference
 	Filtered = [item for item in list(set(Data[ChromCol].to_list())) if item not in Chroms.keys()]
-	if Filtered: Logger.warning(f"Contigs will be removed from database \"{dbName}\": {', '.join(sorted(Filtered))}")
+	if Filtered: logging.warning(f"Contigs will be removed from database \"{dbName}\": {', '.join(sorted(Filtered))}")
 	Data = Data[Data[ChromCol].parallel_apply(lambda x: x in Chroms.keys())]
 	Data["Rank"] = Data[ChromCol].map(Chroms)
 	Data.sort_values(["Rank", StartCol], inplace=True)
 	if Data.shape[0] == 0:
 		ErrorMessage = f"Database \"{dbName}\" and reference \"{Reference}\" have no matching columns"
-		Logger.error(ErrorMessage)
+		logging.error(ErrorMessage)
 		raise RuntimeError(ErrorMessage)
 	
 	# Processing
@@ -111,7 +278,7 @@ def CureBase(
 		AnnovarFolder: str,
 		GenomeAssembly: str,
 		Reference: str,
-		Logger: logging.Logger,
+		DBDir: str,
 		Threads: int) -> None:
 	
 	MODULE_NAME = "CureBase"
@@ -127,13 +294,12 @@ def CureBase(
 			Gff3File = os.path.join(TempDir, f"database_{str(index)}.gff3")
 			ExpectedCols += Tsv2Gff3(
 				dbName = DB["Name"],
-				InputTSV = DB["FileName"],
+				InputTSV = os.path.join(DBDir, DB["FileName"]),
 				ChromCol = DB["ChromColumn"],
 				StartCol = DB["StartColumn"],
 				EndCol = DB["EndColumn"],
 				OutputGFF3 = Gff3File,
 				Reference = Reference,
-				Logger = Logger,
 				Threads = Threads)
 			Gff3List += [ f"database_{str(index)}.gff3" ]
 		
@@ -145,7 +311,6 @@ def CureBase(
 			DBFolder = TempDir,
 			AnnovarFolder = AnnovarFolder,
 			GenomeAssembly = GenomeAssembly,
-			Logger = Logger,
 			Threads = Threads)
 		
 		SNPdata = ['Chr', 'Start', 'End', 'Ref', 'Alt']
@@ -158,7 +323,7 @@ def CureBase(
 			if NewCols.size > 0:
 				NewCols = NewCols.parallel_apply(lambda LD: pandas.Series({str(NewColumns[Col]): ["yes"]} if not LD[0] else {f"{str(NewColumns[Col])}.{str(k)}": [dic[k] for dic in LD] for k in LD[0]}))
 				Data = pandas.concat([Data, NewCols], axis=1)
-			else: Logger.warning(f"Database has no intersections with variants: {str(NewColumns[Col])}")
+			else: logging.warning(f"Database has no intersections with variants: {str(NewColumns[Col])}")
 		Data = Data.drop(columns=list(NewColumns.keys()))
 		MissingCols = [item for item in ExpectedCols if item not in Data.columns.to_list()]
 		Data[MissingCols] = float("nan")
@@ -178,8 +343,7 @@ def AnnoFit(
 		OutputXLSX: str,
 		HGMD: str,
 		AnnovarFolder: str,
-		AnnoFitConfigFile: str,
-		Logger: logging.Logger,
+		AnnoFitConfig: str,
 		ChunkSize: int,
 		Filtering: str = "full",
 		Threads: int = cpu_count()) -> None:
@@ -187,7 +351,7 @@ def AnnoFit(
 	MODULE_NAME = "AnnoFit"
 	
 	# Logging
-	for line in [f"Input TSV: {InputTSV}", f"Output XLSX: {OutputXLSX}", f"Chunk Size: {str(ChunkSize)}"]: Logger.info(line)
+	for line in [f"Input TSV: {InputTSV}", f"Output XLSX: {OutputXLSX}", f"Chunk Size: {str(ChunkSize)}"]: logging.info(line)
 	
 	# Initialize Pandarallel
 	pandarallel.initialize(nb_workers=Threads, verbose=1)
@@ -205,8 +369,8 @@ def AnnoFit(
 			return None
 	def SqueezeTable(DataFrame: pandas.DataFrame) -> pandas.Series:
 		if DataFrame.shape[0] == 1: return DataFrame.iloc[0]
-		if DataFrame.shape[0] == 0: return pandas.Series(index=DataFrame.columns.to_list()).fillna('.')
-		Squeezed = pandas.Series()
+		if DataFrame.shape[0] == 0: return pandas.Series(index=DataFrame.columns.to_list(), dtype=object).fillna('.')
+		Squeezed = pandas.Series(dtype=object)
 		for col in DataFrame.columns.to_list():
 			Squeezed[col] = ';'.join(sorted([str(x) for x in DataFrame[col].to_list() if x != '.']))
 			if Squeezed[col] == '': Squeezed[col] = '.'
@@ -289,11 +453,11 @@ def AnnoFit(
 	GlobalTime = time.time()
 	StartTime = time.time()
 	Result = None
-	Config = json.load(open(AnnoFitConfigFile, 'rt'))
+	Config = AnnoFitConfig
 	HGMDTable = pandas.read_csv(HGMD, sep='\t', dtype=str)
 	for Col in ['Chromosome/scaffold position start (bp)', 'Chromosome/scaffold position end (bp)']: HGMDTable[Col] = HGMDTable[Col].parallel_apply(FormatCoordinates)
 	XRefTable = pandas.read_csv(os.path.join(AnnovarFolder, "example/gene_fullxref.txt"), sep='\t', dtype=str).set_index("#Gene_name").rename_axis(None, axis=1)
-	Logger.info(f"Data loaded - %s" % (SecToTime(time.time() - StartTime)))
+	logging.info(f"Data loaded - %s" % (SecToTime(time.time() - StartTime)))
 	
 	for ChunkNum, Data in enumerate(pandas.read_csv(InputTSV, sep='\t', dtype=str, chunksize=ChunkSize)):
 		
@@ -340,14 +504,14 @@ def AnnoFit(
 		
 		# Shorten table
 		Data = Data[Config["ShortVariant"]]
-		Logger.info(f"ANNOVAR table is prepared - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"ANNOVAR table is prepared - %s" % (SecToTime(time.time() - StartTime)))
 		
 		# Merge with HGMD
 		StartTime = time.time()
 		Data = pandas.merge(Data, HGMDTable, how='left', left_on=["Chr", "Start", "End"], right_on=["Chromosome/scaffold name", "Chromosome/scaffold position start (bp)", "Chromosome/scaffold position end (bp)"])
 		Data.rename(columns={"Variant name": "HGMD"}, inplace=True)
 		Data.fillna('.', inplace=True)
-		Logger.info(f"HGMD merged - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"HGMD merged - %s" % (SecToTime(time.time() - StartTime)))
 		
 		# Merge with XRef
 		StartTime = time.time()
@@ -355,7 +519,7 @@ def AnnoFit(
 		Data = pandas.concat([Data, XRef], axis=1, sort=False)
 		Data.fillna('.', inplace=True)
 		del XRef
-		Logger.info(f"XRef merged - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"XRef merged - %s" % (SecToTime(time.time() - StartTime)))
 		
 		if Filtering == "full":
 			# Base Filtering
@@ -376,11 +540,11 @@ def AnnoFit(
 			Filters["Problematic"] = Data[list(Config["Problems"].keys())].parallel_apply(lambda x: all([(x[index] not in item) for index, item in Config["Problems"].items()]), axis=1)
 			
 			Data = Data[Filters["DP"] & Filters["PopMax"] & Filters["Problematic"] & ( Filters["HGMD"] | Filters["ExonPred"] | Filters["SplicePred"] | Filters["IntronPred"] | Filters["Significance"] | Filters["CLINVAR"] | Filters["ExonicFunc"] | Filters["Splicing"] | (Filters["ncRNA"] & Filters["OMIM"]))]
-		Logger.info(f"Base filtering is ready - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"Base filtering is ready - %s" % (SecToTime(time.time() - StartTime)))
 		
 		#Concat chunks
 		Result = Data if Result is None else pandas.concat([Result, Data], axis=0, ignore_index=True)
-		Logger.info(f"Chunk #{str(ChunkNum + 1)} - %s" % (SecToTime(time.time() - ChunkTime)))
+		logging.info(f"Chunk #{str(ChunkNum + 1)} - %s" % (SecToTime(time.time() - ChunkTime)))
 	
 	# Compound
 	if Filtering == "full":
@@ -397,7 +561,7 @@ def AnnoFit(
 		Filters["NoInfo"] = Result[["pLi", "Disease_description"]].parallel_apply(FilterNoInfo, axis=1)
 		Filters["Compound_filter"] = Result['Annofit.Compound'].parallel_apply(lambda x: any([int(item) > 1 for item in x.split(';')]))
 		Result = Result[ Filters["Compound_filter"] | Filters["pLi"] | Filters["OMIM_Dominance"] | Filters["Zygocity"] | Filters["NoInfo"] ]
-		Logger.info(f"Filtering is ready - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"Filtering is ready - %s" % (SecToTime(time.time() - StartTime)))
 		
 	Result = Result.sort_values(by=["Chr", "Start", "End"])
 	Result["UCSC"] = "."
@@ -410,7 +574,7 @@ def AnnoFit(
 		GenesTable = XRefTable.loc[[item for item in Genes if item in XRefTable.index],:].reset_index().rename(columns={"index": "#Gene_name"}).sort_values(by=["#Gene_name"])[Config["ShortGenesTable"]]
 		# TODO NoInfo Genes?
 		del XRefTable
-		Logger.info(f"Genes list is ready - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"Genes list is ready - %s" % (SecToTime(time.time() - StartTime)))
 		
 		# Hyperlinks
 		StartTime = time.time()
@@ -419,7 +583,7 @@ def AnnoFit(
 		Result["AnnoFit.GeneName"] = Result["AnnoFit.GeneName"].apply(FormatGenomeBrowser)
 		OMIM_links = pandas.DataFrame(GenesTable[["pLi", "Disease_description"]].parallel_apply(FormatOmimCodes, axis=1).to_list()).set_index("Name").fillna('.').rename_axis(None, axis=1)
 		GenesTable = pandas.concat([GenesTable, OMIM_links], axis=1, sort=False)
-		Logger.info(f"Hyperlinks are ready - %s" % (SecToTime(time.time() - StartTime)))
+		logging.info(f"Hyperlinks are ready - %s" % (SecToTime(time.time() - StartTime)))
 	
 	# Save result
 	StartTime = time.time()
@@ -433,81 +597,85 @@ def AnnoFit(
 	else:
 		Result.to_csv(OutputXLSX, sep='\t', index=False)
 	
-	Logger.info(f"Files saved - %s" % (SecToTime(time.time() - StartTime)))
-	Logger.info(f"{MODULE_NAME} finish - %s" % (SecToTime(time.time() - GlobalTime)))
+	logging.info(f"Files saved - %s" % (SecToTime(time.time() - StartTime)))
+	logging.info(f"{MODULE_NAME} finish - %s" % (SecToTime(time.time() - GlobalTime)))
 
 # ------======| ANNOTATION PIPELINE |======------
 
 def AnnoPipe(
-		PipelineConfigFile: str,
+		AnnovarFolder: str,
 		UnitsFile: str,
-		Filtering: str) -> None:
+		Filtering: str, Genome) -> None:
+	DaemonicConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'DaemonicPipeline_config.json'), 'rt'))
+	AnnofitConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'AnnoFit_config.json'), 'rt'))
 	
-	MODULE_NAME = "AnnoPipe"
-	Protocol, PipelineConfig, CurrentStage, BackupPossible = MakePipe(MODULE_NAME, PipelineConfigFile, UnitsFile) # MakePipe
+	Unit = json.load(open(UnitsFile, 'rt'))
+	Unit['AnnovarFolder'] = os.path.realpath(AnnovarFolder)
+	Unit['AnnovarXRef'] = os.path.join(Unit['AnnovarFolder'], DaemonicConf['AnnovarXRefPath'])
+	Unit['AnnovarDatabasesPath'] = os.path.join(Unit['AnnovarFolder'], DaemonicConf['AnnovarDBFolder'])
+	Unit['AnnovarDatabases'] = DaemonicConf['AnnovarDatabases']
+	Unit['Reference']['GenomeInfo']['annovar_alias'] = Genome
+	Unit['GFF3'] = DaemonicConf['GFF3']
+	Unit['HGMDPath'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), DaemonicConf['HGMDPath'])
+	Unit['AnnoFit'] = AnnofitConf
+	Unit['Output']['AnnovarTable'] = f'_temp.{Unit["ID"]}.annovar.tsv'
+	Unit['Output']['VariantsTable'] = {'full': f'{Unit["ID"]}.variants.xlsx', 'no': f'{Unit["ID"]}.variants.unfiltered.tsv'}[Filtering]
+	json.dump(Unit, open(UnitsFile, 'wt'), indent = 4, ensure_ascii = False)
 	
-	# Processing
-	for Unit in Protocol["Units"]:
-		StartTime = time.time()
-		FileNames = GenerateFileNames(Unit, Protocol["Options"]) # Compose filenames
-		Logger = DefaultLogger(FileNames["Log"]) # Configure logging
-		
-		if Unit["Stage"] == 0:
-			
-			ANNOVAR(
-				InputVCF = FileNames["VCF"],
-				OutputTSV = FileNames["AnnovarTable"],
-				Databases = PipelineConfig["AnnovarDatabases"],
-				DBFolder = PipelineConfig["AnnovarDBFolder"],
-				AnnovarFolder = PipelineConfig["AnnovarFolder"],
-				GenomeAssembly = PipelineConfig["GenomeAssembly"],
-				Logger = Logger,
-				Threads = PipelineConfig["Threads"])
-			
-			if PipelineConfig["GFF3"]:
-				CureBase(
-					InputVCF = FileNames["VCF"],
-					OutputTSV = FileNames["AnnovarTable"],
-					Databases = PipelineConfig["GFF3"],
-					AnnovarFolder = PipelineConfig["AnnovarFolder"],
-					Reference = PipelineConfig["Reference"],
-					GenomeAssembly = PipelineConfig["GenomeAssembly"],
-					Logger = Logger,
-					Threads = PipelineConfig["Threads"])
-			Unit["Stage"] += 1
-			if BackupPossible: SaveJSON(Protocol, CurrentStage)
-		
-		if Unit["Stage"] == 1:
-			AnnoFit(
-				InputTSV = FileNames["AnnovarTable"],
-				OutputXLSX = FileNames["FilteredXLSX"],
-				HGMD = PipelineConfig["HGMDPath"],
-				AnnovarFolder = PipelineConfig["AnnovarFolder"],
-				AnnoFitConfigFile = PipelineConfig["AnnoFitConfig"],
-				Logger = Logger,
-				ChunkSize = PipelineConfig["AnnofitChunkSize"],
-				Threads = PipelineConfig["Threads"],
-				Filtering = Filtering)
-			Unit["Stage"] += 1
-			if BackupPossible: SaveJSON(Protocol, CurrentStage)
-			Logger.info(f"Unit {Unit['ID']} successfully annotated, summary time - %s" % (SecToTime(time.time() - StartTime)))
+	StageAlias = 'Annovar'
+	if StageAlias not in Unit['Stage']:
+		ANNOVAR(
+			InputVCF = os.path.join(Unit['OutputDir'], Unit["Output"]["VCF"]),
+			OutputTSV = os.path.join(Unit['OutputDir'], Unit['Output']['AnnovarTable']),
+			Databases = Unit["AnnovarDatabases"],
+			DBFolder = Unit["AnnovarDatabasesPath"],
+			AnnovarFolder = Unit["AnnovarFolder"],
+			GenomeAssembly = Unit['Reference']['GenomeInfo']['annovar_alias'],
+			Threads = Unit["Config"]["Threads"])
+		Unit['Stage'].append(StageAlias)
+		json.dump(Unit, open(UnitsFile, 'wt'), indent = 4, ensure_ascii = False)
 	
-	os.remove(CurrentStage)
-
-CurrentDir = os.path.dirname(sys.argv[0])
+	if Unit["GFF3"]:
+		StageAlias = 'GFF3'
+		if StageAlias not in Unit['Stage']:
+			CureBase(
+				DBDir = os.path.dirname(os.path.abspath(__file__)),
+				InputVCF = os.path.join(Unit['OutputDir'], Unit["Output"]["VCF"]),
+				OutputTSV = os.path.join(Unit['OutputDir'], Unit['Output']['AnnovarTable']),
+				Databases = Unit["GFF3"],
+				AnnovarFolder = Unit["AnnovarFolder"],
+				Reference = os.path.join(Unit['Reference']['GenomeDir'], Unit['Reference']['GenomeInfo']['fasta']),
+				GenomeAssembly = Unit['Reference']['GenomeInfo']['annovar_alias'],
+				Threads = Unit["Config"]["Threads"])
+			Unit['Stage'].append(StageAlias)
+			json.dump(Unit, open(UnitsFile, 'wt'), indent = 4, ensure_ascii = False)
+	
+	StageAlias = 'Annofit'
+	if StageAlias not in Unit['Stage']:
+		AnnoFit(
+			InputTSV = os.path.join(Unit['OutputDir'], Unit['Output']['AnnovarTable']),
+			OutputXLSX = os.path.join(Unit['OutputDir'], Unit['Output']['VariantsTable']),
+			HGMD = Unit["HGMDPath"],
+			AnnovarFolder = Unit["AnnovarFolder"],
+			AnnoFitConfig = Unit["AnnoFit"],
+			ChunkSize = Unit["AnnoFit"]["AnnofitChunkSize"],
+			Threads = Unit["Config"]["Threads"],
+			Filtering = Filtering)
+		Unit['Stage'].append(StageAlias)
+		json.dump(Unit, open(UnitsFile, 'wt'), indent = 4, ensure_ascii = False)
 
 def CreateParser():
 	Parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=f"Scissors: Pipeline for Exome Sequence Analysis", epilog=f"Email: regnveig@ya.ru")
 	Parser.add_argument('--version', action='version', version=__version__)
 
-	Parser.add_argument('-c', '--config', default=os.path.join(CurrentDir, "config/DaemonicPipeline_config.json"), help=f"Pipeline Config File (default: config/DaemonicPipeline_config.json)")
+	Parser.add_argument('-a', '--annovar', required=True, help=f"Annovar folder")
+	Parser.add_argument('-g', '--genome', required=True, help=f"Annovar genome alias")
 	Parser.add_argument('-u', '--units', required=True, help=f"Units File in JSON format")
 	Parser.add_argument('-n', '--nofilter', action='store_true', help=f"Don't filter variants")
 	
 	return Parser
 
-if __name__ == '__main__':
-	
+def main():
 	Parser = CreateParser()
 	Namespace = Parser.parse_args(sys.argv[1:])
-	AnnoPipe(Namespace.config, Namespace.units, "no" if Namespace.nofilter else "full")
+	AnnoPipe(Namespace.annovar, Namespace.units, "no" if Namespace.nofilter else "full", Namespace.genome)

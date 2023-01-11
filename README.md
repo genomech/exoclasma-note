@@ -1,5 +1,6 @@
 # exoclasma-note
-Annotation of genomic variants
+
+Annotation of genomic variants.
 
 ## Dependencies
 
@@ -22,3 +23,19 @@ perl annotate_variation.pl -downdb -buildver ${GENOME} -webfrom annovar ensGene 
 cd ..
 rm annovar.latest.tar.gz
 ```
+
+## Install
+
+```bash
+sudo python3 -m pip install exoclasma-note
+```
+
+## Usage
+
+```bash
+exoclasma-note -u ${unit_json} -a ${annovar_folder} -g ${genome}
+```
+
+* `unit_json`: Unit JSON file which was created by exoclasma-pipe
+* `annovar_folder`: Path to ANNOVAR folder where perl scripts are located
+* `genome`: Genome assembly which use ANNOVAR (i.e., hg19, hg38, etc.)

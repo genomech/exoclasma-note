@@ -94,7 +94,7 @@
             "annovar_alias": "hg19"
         },
         "Capture": "KAPA_HyperExome",
-        "GenomeDir": "/dreamworld/databases/hg19_canonical",
+        "GenomeDir": "/storage2/dreamworld/Databases/hg19_canonical",
         "BQSR_dbSNP": "/storage2/databases/dbsnp_bqsr.vcf.gz"
     },
     "Config": {
@@ -237,7 +237,8 @@
         "RecalibratedBAM": "_temp.EmilTestExoC.recalibrated.bam",
         "VCF": "EmilTestExoC.vcf.gz",
         "gVCF": "EmilTestExoC.g.vcf.gz",
-        "AnnovarVCF": "_temp.EmilTestExoC.annovar.vcf.gz"
+        "AnnovarTable": "_temp.EmilTestExoC.annovar.tsv",
+        "VariantsTable": "EmilTestExoC.variants.xlsx"
     },
     "Stage": [
         "Cutadapt",
@@ -247,8 +248,621 @@
         "RemoveTempFiles",
         "BaseRecalibration",
         "HaplotypeCalling",
-        "RemoveTempFiles2",
-        "Annovar"
+        "RemoveTempFiles2"
     ],
-    "AnnovarFolder": "/home/thousandtowers/annovar/annovar"
+    "AnnovarFolder": "/storage2/databases/annovar",
+    "AnnovarXRef": "/storage2/databases/annovar/example/gene_fullxref.txt",
+    "AnnovarDatabasesPath": "/storage2/databases/annovar/humandb",
+    "AnnovarDatabases": [
+        {
+            "Protocol": "refGene",
+            "Operation": "g",
+            "Comment": "FASTA sequences for all annotated transcripts in RefSeq Gene",
+            "Database": "refGene"
+        },
+        {
+            "Protocol": "knownGene",
+            "Operation": "g",
+            "Comment": "FASTA sequences for all annotated transcripts in UCSC Known Gene",
+            "Database": "knownGene"
+        },
+        {
+            "Protocol": "ensGene",
+            "Operation": "g",
+            "Comment": "FASTA sequences for all annotated transcripts in Gencode v31 Basic collection",
+            "Database": "ensGene"
+        },
+        {
+            "Protocol": "dbnsfp35c",
+            "Operation": "f",
+            "Comment": "whole-exome SIFT, PolyPhen2 HDIV, PolyPhen2 HVAR, LRT, MutationTaster, MutationAssessor, FATHMM, PROVEAN, MetaSVM, MetaLR, VEST, M-CAP, CADD, GERP++, DANN, fathmm-MKL, Eigen, GenoCanyon, fitCons, PhyloP and SiPhy scores from dbNSFP version 3.5c, suitable for commercial use",
+            "Database": "dbnsfp35c"
+        },
+        {
+            "Protocol": "dbscsnv11",
+            "Operation": "f",
+            "Comment": "dbscSNV version 1.1 for splice site prediction by AdaBoost and Random Forest",
+            "Database": "dbscsnv11"
+        },
+        {
+            "Protocol": "intervar_20180118",
+            "Operation": "f",
+            "Comment": "InterVar: clinical interpretation of missense variants (indels not supported)",
+            "Database": "intervar_20180118"
+        },
+        {
+            "Protocol": "gnomad211_genome",
+            "Operation": "f",
+            "Comment": "gnomAD exome collection (v2.1.1), with \"AF AF_popmax AF_male AF_female AF_raw AF_afr AF_sas AF_amr AF_eas AF_nfe AF_fin AF_asj AF_oth non_topmed_AF_popmax non_neuro_AF_popmax non_cancer_AF_popmax controls_AF_popmax\" header",
+            "Database": "gnomad211_genome"
+        },
+        {
+            "Protocol": "gene4denovo201907",
+            "Operation": "f",
+            "Comment": "gene4denovo database",
+            "Database": "gene4denovo201907"
+        },
+        {
+            "Protocol": "kaviar_20150923",
+            "Operation": "f",
+            "Comment": "170 million Known VARiants from 13K genomes and 64K exomes in 34 projects",
+            "Database": "kaviar_20150923"
+        },
+        {
+            "Protocol": "hrcr1",
+            "Operation": "f",
+            "Comment": "40 million variants from 32K samples in haplotype reference consortium",
+            "Database": "hrcr1"
+        },
+        {
+            "Protocol": "abraom",
+            "Operation": "f",
+            "Comment": "2.3 million Brazilian genomic variants",
+            "Database": "abraom"
+        },
+        {
+            "Protocol": "ALL.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "AFR.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "AMR.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "EUR.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "EAS.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "SAS.sites.2015_08",
+            "Operation": "f",
+            "Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+            "Database": "1000g2015aug"
+        },
+        {
+            "Protocol": "gme",
+            "Operation": "f",
+            "Comment": "Great Middle East allele frequency including NWA (northwest Africa), NEA (northeast Africa), AP (Arabian peninsula), Israel, SD (Syrian desert), TP (Turkish peninsula) and CA (Central Asia)",
+            "Database": "gme"
+        },
+        {
+            "Protocol": "esp6500siv2_all",
+            "Operation": "f",
+            "Comment": "alternative allele frequency in All subjects in the NHLBI-ESP project with 6500 exomes, including the indel calls and the chrY calls. This is lifted over from hg19 by myself.",
+            "Database": "esp6500siv2_all"
+        },
+        {
+            "Protocol": "avsnp150",
+            "Operation": "f",
+            "Comment": "dbSNP150 with allelic splitting and left-normalization",
+            "Database": "avsnp150"
+        },
+        {
+            "Protocol": "clinvar_20200316",
+            "Operation": "f",
+            "Comment": "Clinvar version 20200316 with separate columns (CLNALLELEID CLNDN CLNDISDB CLNREVSTAT CLNSIG)",
+            "Database": "clinvar_20200316"
+        },
+        {
+            "Protocol": "regsnpintron",
+            "Operation": "f",
+            "Comment": "prioritize the disease-causing probability of intronic SNVs",
+            "Database": "regsnpintron"
+        },
+        {
+            "Protocol": "revel",
+            "Operation": "f",
+            "Comment": "REVEL scores for non-synonymous variants",
+            "Database": "revel"
+        },
+        {
+            "Protocol": "gwava",
+            "Operation": "f",
+            "Comment": "whole genome GWAVA_region_score and GWAVA_tss_score (GWAVA_unmatched_score has bug in file)",
+            "Database": "gwava"
+        }
+    ],
+    "GFF3": [
+        {
+            "Name": "ENCODE_Blacklist",
+            "FileName": "db/Problematic_Regions/ENCODE_Blacklist",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Low mappability or high signal regions (doi: 10.1038/s41598-019-45839-z)"
+        },
+        {
+            "Name": "GIAB_AlignProblem",
+            "FileName": "db/Problematic_Regions/GIAB_AlignProblem",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Calls with evidence of local alignment problems like clipped reads"
+        },
+        {
+            "Name": "GIAB_AlleleImbalance",
+            "FileName": "db/Problematic_Regions/GIAB_AlleleImbalance",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Abnormal allele balance"
+        },
+        {
+            "Name": "GIAB_CallConflict",
+            "FileName": "db/Problematic_Regions/GIAB_CallConflict",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "HaplotypeCaller makes no call and UnifiedGenotyper makes a variant call"
+        },
+        {
+            "Name": "GIAB_FilterSSE",
+            "FileName": "db/Problematic_Regions/GIAB_FilterSSE",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Sites with systematic sequencing errors (SSEs)"
+        },
+        {
+            "Name": "GIAB_GenotypeConflict",
+            "FileName": "db/Problematic_Regions/GIAB_GenotypeConflict",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Calls with unresolved conflicting genotypes after arbitration"
+        },
+        {
+            "Name": "GIAB_QualityIssue",
+            "FileName": "db/Problematic_Regions/GIAB_QualityIssue",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Regions with low coverage or mapping quality"
+        },
+        {
+            "Name": "NCBI_NGS_DeadZone",
+            "FileName": "db/Problematic_Regions/NCBI_NGS_DeadZone",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "These regions are entire exons or large contiguous portions of exons that have 100% identity to other loci. A contiguous region of 250 or more affected positions indicates a stretch of 100% homology that extends 499 or more base pairs. When attempting to sequence the central positions of a homologous sequence of this length, a read’s mate pair cannot assist with unambiguous alignment of the read because it also falls inside the region of 100% homology, given a library fragment size of 250 bp."
+        },
+        {
+            "Name": "NCBI_NGS_HighStringency",
+            "FileName": "db/Problematic_Regions/NCBI_NGS_HighStringency",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Exon-based list included exons with ≥90% of their positions affected by high homology or a contiguous stretch of 250 or more affected positions to account for significant regions of high homology within large exons. In these cases, the overwhelming majority of reads generated from this region will possess high homology to other loci, which may lead to misalignment to other portions of the genome. Variant calls based on reads mapped to these affected regions should be viewed with extreme caution."
+        },
+        {
+            "Name": "NCBI_NGS_LowStringency",
+            "FileName": "db/Problematic_Regions/NCBI_NGS_LowStringency",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "This list captures any exon with at least one position whose associated 250-bp sequence fragment maps to more than one place in the genome with 2% or less mismatches. This analysis aims to detect all regions at risk for homology interference, and thus a substantial fraction of exons on this list may not cause analytical problems in practice."
+        },
+        {
+            "Name": "NCBI_Sanger_DeadZone",
+            "FileName": "db/Problematic_Regions/NCBI_Sanger_DeadZone",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "Some clinical laboratories routinely use Sanger sequencing to confirm variants detected by NGS. A homologous region that is difficult to analyze by NGS may still be interrogated accurately by Sanger sequencing provided that it is possible to design amplicons larger than the region affected by sequence homology. There are regions in the exome that cannot be Sanger sequenced using standard short amplicon protocols, assuming a maximum amplicon size of 1,000 bp."
+        },
+        {
+            "Name": "UCSC_UnusualRegions",
+            "FileName": "db/Problematic_Regions/UCSC_UnusualRegions",
+            "ChromColumn": "#chrom",
+            "StartColumn": "chromStart",
+            "EndColumn": "chromEnd",
+            "Comment": "UCSC Unusual Regions with comments"
+        }
+    ],
+    "HGMDPath": "/usr/local/lib/python3.8/dist-packages/exoclasma_note/db/HGMD.tsv",
+    "AnnoFit": {
+        "AnnofitChunkSize": 300000,
+        "GeneNames": [
+            "Gene.refGene",
+            "Gene.knownGene"
+        ],
+        "Func": [
+            "Func.refGene",
+            "Func.knownGene",
+            "Func.ensGene"
+        ],
+        "ExonicFunc": [
+            "ExonicFunc.refGene",
+            "ExonicFunc.knownGene",
+            "ExonicFunc.ensGene"
+        ],
+        "Details": [
+            "GeneDetail.refGene",
+            "AAChange.refGene",
+            "GeneDetail.knownGene",
+            "AAChange.knownGene",
+            "GeneDetail.ensGene",
+            "AAChange.ensGene"
+        ],
+        "IntergeneSynonims": [
+            "intergenic",
+            "upstream",
+            "downstream"
+        ],
+        "WipeIntergene": {
+            "Func.refGene": "Gene.refGene",
+            "Func.knownGene": "Gene.knownGene",
+            "Func.ensGene": "Gene.ensGene"
+        },
+        "GIAB": [
+            "GIAB_AlignProblem",
+            "GIAB_AlleleImbalance",
+            "GIAB_CallConflict",
+            "GIAB_FilterSSE",
+            "GIAB_GenotypeConflict",
+            "GIAB_QualityIssue"
+        ],
+        "NCBI_Problems": [
+            "NCBI_NGS_DeadZone.start",
+            "NCBI_NGS_DeadZone.end",
+            "NCBI_NGS_DeadZone.gene",
+            "NCBI_NGS_DeadZone.plusminus65bpexonlength",
+            "NCBI_NGS_DeadZone.exonlength",
+            "NCBI_NGS_DeadZone.averagemappabilityl250m0",
+            "NCBI_NGS_DeadZone.exonmappbelow1l250m01yes0no",
+            "NCBI_NGS_DeadZone.positionsmappbelow1l250m0",
+            "NCBI_NGS_DeadZone.percpositionsmappbelow1l250m0",
+            "NCBI_NGS_DeadZone.maxcontigousbasesl250m0",
+            "NCBI_NGS_HighStringency.start",
+            "NCBI_NGS_HighStringency.end",
+            "NCBI_NGS_HighStringency.gene",
+            "NCBI_NGS_HighStringency.plusminus65bpexonlength",
+            "NCBI_NGS_HighStringency.exonlength",
+            "NCBI_NGS_HighStringency.averagemappabilityl250m5",
+            "NCBI_NGS_HighStringency.exonmappbelow1l250m51yes0no",
+            "NCBI_NGS_HighStringency.positionsmappbelow1l250m5",
+            "NCBI_NGS_HighStringency.percpositionsmappbelow1l250m5",
+            "NCBI_NGS_HighStringency.maxcontigousbasesl250m5",
+            "NCBI_NGS_LowStringency.start",
+            "NCBI_NGS_LowStringency.end",
+            "NCBI_NGS_LowStringency.gene",
+            "NCBI_NGS_LowStringency.plusminus65bpexonlength",
+            "NCBI_NGS_LowStringency.exonlength",
+            "NCBI_NGS_LowStringency.averagemappabilityl250m5",
+            "NCBI_NGS_LowStringency.exonmappbelow1l250m51yes0no",
+            "NCBI_NGS_LowStringency.positionsmappbelow1l250m5",
+            "NCBI_NGS_LowStringency.percpositionsmappbelow1l250m5",
+            "NCBI_NGS_LowStringency.maxcontigousbasesl250m5",
+            "NCBI_Sanger_DeadZone.start",
+            "NCBI_Sanger_DeadZone.end",
+            "NCBI_Sanger_DeadZone.gene",
+            "NCBI_Sanger_DeadZone.plusminus65bpexonlength",
+            "NCBI_Sanger_DeadZone.exonlength",
+            "NCBI_Sanger_DeadZone.averagemappabilityl1000m0",
+            "NCBI_Sanger_DeadZone.exonbelow1mappabilityl1000m01yes0no",
+            "NCBI_Sanger_DeadZone.positionsbelow1mappabilityl1000m0",
+            "NCBI_Sanger_DeadZone.percpositionsbelow1mappabilityl1000m0",
+            "NCBI_Sanger_DeadZone.maxcontigousbasesmappabilityl1000m0"
+        ],
+        "NCBI_Problems_Ranks": {
+            "NGS_LowStringency": 1,
+            "NGS_HighStringency": 2,
+            "NGS_DeadZone": 3,
+            "Sanger_DeadZone": 4
+        },
+        "Problems": {
+            "GIAB_Problems": [],
+            "ENCODE_Blacklist": [
+                "High Signal Region"
+            ],
+            "UCSC_UnusualRegions": [],
+            "NCBI_Problems": [
+                "NGS_DeadZone",
+                "Sanger_DeadZone"
+            ]
+        },
+        "PopulationData": [
+            "AF",
+            "AF_popmax",
+            "AF_male",
+            "AF_female",
+            "AF_raw",
+            "AF_afr",
+            "AF_sas",
+            "AF_amr",
+            "AF_eas",
+            "AF_nfe",
+            "AF_fin",
+            "AF_asj",
+            "AF_oth",
+            "Kaviar_AF",
+            "HRC_AF",
+            "HRC_non1000G_AF",
+            "abraom_freq",
+            "ALL.sites.2015_08",
+            "AFR.sites.2015_08",
+            "AMR.sites.2015_08",
+            "EUR.sites.2015_08",
+            "EAS.sites.2015_08",
+            "SAS.sites.2015_08",
+            "GME_AF",
+            "GME_NWA",
+            "GME_NEA",
+            "GME_AP",
+            "GME_Israel",
+            "GME_SD",
+            "GME_TP",
+            "GME_CA",
+            "esp6500siv2_all"
+        ],
+        "MedicalPopulationData": [
+            "non_topmed_AF_popmax",
+            "non_neuro_AF_popmax",
+            "non_cancer_AF_popmax",
+            "controls_AF_popmax"
+        ],
+        "dbscSNV": [
+            "dbscSNV_ADA_SCORE",
+            "dbscSNV_RF_SCORE"
+        ],
+        "SymbolPred": [
+            {
+                "Name": "SIFT_pred",
+                "Symbols": {
+                    "D": "D",
+                    "T": "T"
+                }
+            },
+            {
+                "Name": "LRT_pred",
+                "Symbols": {
+                    "D": "D",
+                    "N": "T",
+                    "U": "U"
+                }
+            },
+            {
+                "Name": "MutationTaster_pred",
+                "Symbols": {
+                    "A": "D",
+                    "D": "D",
+                    "N": "T",
+                    "P": "T"
+                }
+            },
+            {
+                "Name": "MutationAssessor_pred",
+                "Symbols": {
+                    "H": "D",
+                    "M": "D",
+                    "L": "T",
+                    "N": "T"
+                }
+            },
+            {
+                "Name": "FATHMM_pred",
+                "Symbols": {
+                    "D": "D",
+                    "T": "T"
+                }
+            },
+            {
+                "Name": "PROVEAN_pred",
+                "Symbols": {
+                    "D": "D",
+                    "N": "T"
+                }
+            },
+            {
+                "Name": "MetaSVM_pred",
+                "Symbols": {
+                    "D": "D",
+                    "T": "T"
+                }
+            },
+            {
+                "Name": "MetaLR_pred",
+                "Symbols": {
+                    "D": "D",
+                    "T": "T"
+                }
+            },
+            {
+                "Name": "M-CAP_pred",
+                "Symbols": {
+                    "D": "D",
+                    "T": "T"
+                }
+            },
+            {
+                "Name": "fathmm-MKL_coding_pred",
+                "Symbols": {
+                    "D": "D",
+                    "N": "T"
+                }
+            }
+        ],
+        "ConservationRS": [
+            "GERP++_RS_rankscore",
+            "integrated_fitCons_score_rankscore",
+            "phastCons100way_vertebrate_rankscore",
+            "phastCons20way_mammalian_rankscore",
+            "phyloP100way_vertebrate_rankscore",
+            "phyloP20way_mammalian_rankscore",
+            "SiPhy_29way_logOdds_rankscore"
+        ],
+        "OtherInfo": {
+            "Otherinfo9": "VCF.QUAL",
+            "Otherinfo12": "VCF.FORMAT",
+            "Otherinfo13": "VCF.SAMPLE"
+        },
+        "PopMax_filter": 0.03,
+        "ConservationTH": 0.7,
+        "ExonPredThreshold": 3,
+        "SplicePred_filter": [
+            "D"
+        ],
+        "IntronPred_filter": [
+            "D",
+            "PD"
+        ],
+        "InterVar_filter": [
+            "Likely pathogenic",
+            "Pathogenic"
+        ],
+        "CLINVAR_filter": [
+            "association",
+            "Pathogenic",
+            "Likely_pathogenic",
+            "Pathogenic/Likely_pathogenic",
+            "Affects"
+        ],
+        "ExonicFunc_filter": [
+            "frameshift insertion",
+            "startloss",
+            "stoploss",
+            "stopgain",
+            "frameshift deletion"
+        ],
+        "ncRNA_filter": [
+            "ncRNA_splicing",
+            "ncRNA_intronic",
+            "ncRNA_exonic"
+        ],
+        "Splicing_filter": [
+            "splicing"
+        ],
+        "ShortVariant": [
+            "Chr",
+            "Start",
+            "End",
+            "Ref",
+            "Alt",
+            "VCF.QUAL",
+            "VCF.DP",
+            "VCF.AD",
+            "avsnp150",
+            "AnnoFit.GeneName",
+            "AnnoFit.Func",
+            "AnnoFit.ExonicFunc",
+            "AnnoFit.Details",
+            "AnnoFit.PopFreqMax",
+            "non_topmed_AF_popmax",
+            "non_neuro_AF_popmax",
+            "non_cancer_AF_popmax",
+            "controls_AF_popmax",
+            "AnnoFit.ExonPred",
+            "AnnoFit.SplicePred",
+            "regsnp_disease",
+            "regsnp_splicing_site",
+            "AnnoFit.Conservation",
+            "Interpro_domain",
+            "GTEx_V6p_gene",
+            "GTEx_V6p_tissue",
+            "InterVar_automated",
+            "DN ID",
+            "Patient ID",
+            "Phenotype",
+            "Platform",
+            "Study",
+            "Pubmed ID",
+            "CLNALLELEID",
+            "CLNDN",
+            "CLNDISDB",
+            "CLNREVSTAT",
+            "CLNSIG",
+            "VCF.GT",
+            "GIAB_Problems",
+            "ENCODE_Blacklist",
+            "UCSC_UnusualRegions",
+            "NCBI_Problems"
+        ],
+        "FinalVariant": [
+            "UCSC",
+            "Chr",
+            "Start",
+            "End",
+            "Ref",
+            "Alt",
+            "VCF.QUAL",
+            "VCF.DP",
+            "VCF.AD",
+            "HGMD",
+            "avsnp150",
+            "AnnoFit.GeneName",
+            "AnnoFit.Func",
+            "AnnoFit.ExonicFunc",
+            "AnnoFit.Details",
+            "AnnoFit.PopFreqMax",
+            "non_topmed_AF_popmax",
+            "non_neuro_AF_popmax",
+            "non_cancer_AF_popmax",
+            "controls_AF_popmax",
+            "AnnoFit.ExonPred",
+            "AnnoFit.SplicePred",
+            "regsnp_disease",
+            "regsnp_splicing_site",
+            "AnnoFit.Conservation",
+            "InterVar_automated",
+            "CLNSIG",
+            "VCF.GT",
+            "Annofit.Compound",
+            "pLi",
+            "Gene_full_name",
+            "Function_description",
+            "Disease_description",
+            "GIAB_Problems",
+            "ENCODE_Blacklist",
+            "UCSC_UnusualRegions",
+            "NCBI_Problems"
+        ],
+        "ShortGenesTable": [
+            "#Gene_name",
+            "pLi",
+            "Gene_full_name",
+            "Function_description",
+            "Disease_description",
+            "Tissue_specificity(Uniprot)",
+            "Expression(egenetics)",
+            "Expression(GNF/Atlas)"
+        ]
+    }
 }

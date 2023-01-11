@@ -1,10 +1,7 @@
 {
-	"AnnoFitConfig": "config/AnnoFit_config.json",
-	"AnnofitChunkSize": 300000,
 	"HGMDPath": "db/HGMD.tsv",
-	"AnnovarXRefPath": "/Data/Tools/ANNOVAR_200706/example/gene_fullxref.txt",
-	"AnnovarFolder": "/Data/Tools/ANNOVAR_200706",
-	"AnnovarDBFolder": "/Data/Tools/ANNOVAR_200706/humandb",
+	"AnnovarXRefPath": "example/gene_fullxref.txt",
+	"AnnovarDBFolder": "humandb",
 	"AnnovarDatabases": [
 		{
 			"Protocol": "refGene",
