@@ -1,0 +1,252 @@
+{
+	"AnnoFitConfig": "config/AnnoFit_config.json",
+	"AnnofitChunkSize": 300000,
+	"HGMDPath": "db/HGMD.tsv",
+	"AnnovarXRefPath": "/Data/Tools/ANNOVAR_200706/example/gene_fullxref.txt",
+	"AnnovarFolder": "/Data/Tools/ANNOVAR_200706",
+	"AnnovarDBFolder": "/Data/Tools/ANNOVAR_200706/humandb",
+	"AnnovarDatabases": [
+		{
+			"Protocol": "refGene",
+			"Operation": "g",
+			"Comment": "FASTA sequences for all annotated transcripts in RefSeq Gene",
+			"Database": "refGene"
+		},
+		{
+			"Protocol": "knownGene",
+			"Operation": "g",
+			"Comment": "FASTA sequences for all annotated transcripts in UCSC Known Gene",
+			"Database": "knownGene"
+		},
+		{
+			"Protocol": "ensGene",
+			"Operation": "g",
+			"Comment": "FASTA sequences for all annotated transcripts in Gencode v31 Basic collection",
+			"Database": "ensGene"
+		},
+		{
+			"Protocol": "dbnsfp35c",
+			"Operation": "f",
+			"Comment": "whole-exome SIFT, PolyPhen2 HDIV, PolyPhen2 HVAR, LRT, MutationTaster, MutationAssessor, FATHMM, PROVEAN, MetaSVM, MetaLR, VEST, M-CAP, CADD, GERP++, DANN, fathmm-MKL, Eigen, GenoCanyon, fitCons, PhyloP and SiPhy scores from dbNSFP version 3.5c, suitable for commercial use",
+			"Database": "dbnsfp35c"
+		},
+		{
+			"Protocol": "dbscsnv11",
+			"Operation": "f",
+			"Comment": "dbscSNV version 1.1 for splice site prediction by AdaBoost and Random Forest",
+			"Database": "dbscsnv11"
+		},
+		{
+			"Protocol": "intervar_20180118",
+			"Operation": "f",
+			"Comment": "InterVar: clinical interpretation of missense variants (indels not supported)",
+			"Database": "intervar_20180118"
+		},
+		{
+			"Protocol": "gnomad211_genome",
+			"Operation": "f",
+			"Comment": "gnomAD exome collection (v2.1.1), with \"AF AF_popmax AF_male AF_female AF_raw AF_afr AF_sas AF_amr AF_eas AF_nfe AF_fin AF_asj AF_oth non_topmed_AF_popmax non_neuro_AF_popmax non_cancer_AF_popmax controls_AF_popmax\" header",
+			"Database": "gnomad211_genome"
+		},
+		{
+			"Protocol": "gene4denovo201907",
+			"Operation": "f",
+			"Comment": "gene4denovo database",
+			"Database": "gene4denovo201907"
+		},
+		{
+			"Protocol": "kaviar_20150923",
+			"Operation": "f",
+			"Comment": "170 million Known VARiants from 13K genomes and 64K exomes in 34 projects",
+			"Database": "kaviar_20150923"
+		},
+		{
+			"Protocol": "hrcr1",
+			"Operation": "f",
+			"Comment": "40 million variants from 32K samples in haplotype reference consortium",
+			"Database": "hrcr1"
+		},
+		{
+			"Protocol": "abraom",
+			"Operation": "f",
+			"Comment": "2.3 million Brazilian genomic variants",
+			"Database": "abraom"
+		},
+		{
+			"Protocol": "ALL.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "AFR.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "AMR.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "EUR.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "EAS.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "SAS.sites.2015_08",
+			"Operation": "f",
+			"Comment": "The 1000G team fixed a bug in chrX frequency calculation. Based on 201508 collection v5b (based on 201305 alignment)",
+			"Database": "1000g2015aug"
+		},
+		{
+			"Protocol": "gme",
+			"Operation": "f",
+			"Comment": "Great Middle East allele frequency including NWA (northwest Africa), NEA (northeast Africa), AP (Arabian peninsula), Israel, SD (Syrian desert), TP (Turkish peninsula) and CA (Central Asia)",
+			"Database": "gme"
+		},
+		{
+			"Protocol": "esp6500siv2_all",
+			"Operation": "f",
+			"Comment": "alternative allele frequency in All subjects in the NHLBI-ESP project with 6500 exomes, including the indel calls and the chrY calls. This is lifted over from hg19 by myself.",
+			"Database": "esp6500siv2_all"
+		},
+		{
+			"Protocol": "avsnp150",
+			"Operation": "f",
+			"Comment": "dbSNP150 with allelic splitting and left-normalization",
+			"Database": "avsnp150"
+		},
+		{
+			"Protocol": "clinvar_20200316",
+			"Operation": "f",
+			"Comment": "Clinvar version 20200316 with separate columns (CLNALLELEID CLNDN CLNDISDB CLNREVSTAT CLNSIG)",
+			"Database": "clinvar_20200316"
+		},
+		{
+			"Protocol": "regsnpintron",
+			"Operation": "f",
+			"Comment": "prioritize the disease-causing probability of intronic SNVs",
+			"Database": "regsnpintron"
+		},
+		{
+			"Protocol": "revel",
+			"Operation": "f",
+			"Comment": "REVEL scores for non-synonymous variants",
+			"Database": "revel"
+		},
+		{
+			"Protocol": "gwava",
+			"Operation": "f",
+			"Comment": "whole genome GWAVA_region_score and GWAVA_tss_score (GWAVA_unmatched_score has bug in file)",
+			"Database": "gwava"
+		}
+	],
+	"GFF3": [
+		{
+			"Name": "ENCODE_Blacklist",
+			"FileName": "db/Problematic_Regions/ENCODE_Blacklist",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Low mappability or high signal regions (doi: 10.1038/s41598-019-45839-z)"
+		},
+		{
+			"Name": "GIAB_AlignProblem",
+			"FileName": "db/Problematic_Regions/GIAB_AlignProblem",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Calls with evidence of local alignment problems like clipped reads"
+		},
+		{
+			"Name": "GIAB_AlleleImbalance",
+			"FileName": "db/Problematic_Regions/GIAB_AlleleImbalance",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Abnormal allele balance"
+		},
+		{
+			"Name": "GIAB_CallConflict",
+			"FileName": "db/Problematic_Regions/GIAB_CallConflict",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "HaplotypeCaller makes no call and UnifiedGenotyper makes a variant call"
+		},
+		{
+			"Name": "GIAB_FilterSSE",
+			"FileName": "db/Problematic_Regions/GIAB_FilterSSE",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Sites with systematic sequencing errors (SSEs)"
+		},
+		{
+			"Name": "GIAB_GenotypeConflict",
+			"FileName": "db/Problematic_Regions/GIAB_GenotypeConflict",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Calls with unresolved conflicting genotypes after arbitration"
+		},
+		{
+			"Name": "GIAB_QualityIssue",
+			"FileName": "db/Problematic_Regions/GIAB_QualityIssue",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Regions with low coverage or mapping quality"
+		},
+		{
+			"Name": "NCBI_NGS_DeadZone",
+			"FileName": "db/Problematic_Regions/NCBI_NGS_DeadZone",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "These regions are entire exons or large contiguous portions of exons that have 100% identity to other loci. A contiguous region of 250 or more affected positions indicates a stretch of 100% homology that extends 499 or more base pairs. When attempting to sequence the central positions of a homologous sequence of this length, a read’s mate pair cannot assist with unambiguous alignment of the read because it also falls inside the region of 100% homology, given a library fragment size of 250 bp."
+		},
+		{
+			"Name": "NCBI_NGS_HighStringency",
+			"FileName": "db/Problematic_Regions/NCBI_NGS_HighStringency",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Exon-based list included exons with ≥90% of their positions affected by high homology or a contiguous stretch of 250 or more affected positions to account for significant regions of high homology within large exons. In these cases, the overwhelming majority of reads generated from this region will possess high homology to other loci, which may lead to misalignment to other portions of the genome. Variant calls based on reads mapped to these affected regions should be viewed with extreme caution."
+		},
+		{
+			"Name": "NCBI_NGS_LowStringency",
+			"FileName": "db/Problematic_Regions/NCBI_NGS_LowStringency",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "This list captures any exon with at least one position whose associated 250-bp sequence fragment maps to more than one place in the genome with 2% or less mismatches. This analysis aims to detect all regions at risk for homology interference, and thus a substantial fraction of exons on this list may not cause analytical problems in practice."
+		},
+		{
+			"Name": "NCBI_Sanger_DeadZone",
+			"FileName": "db/Problematic_Regions/NCBI_Sanger_DeadZone",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "Some clinical laboratories routinely use Sanger sequencing to confirm variants detected by NGS. A homologous region that is difficult to analyze by NGS may still be interrogated accurately by Sanger sequencing provided that it is possible to design amplicons larger than the region affected by sequence homology. There are regions in the exome that cannot be Sanger sequenced using standard short amplicon protocols, assuming a maximum amplicon size of 1,000 bp."
+		},
+		{
+			"Name": "UCSC_UnusualRegions",
+			"FileName": "db/Problematic_Regions/UCSC_UnusualRegions",
+			"ChromColumn": "#chrom",
+			"StartColumn": "chromStart",
+			"EndColumn": "chromEnd",
+			"Comment": "UCSC Unusual Regions with comments"
+		}
+	]
+}
