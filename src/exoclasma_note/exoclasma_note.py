@@ -585,6 +585,11 @@ def AnnoFit(
 		GenesTable = pandas.concat([GenesTable, OMIM_links], axis=1, sort=False)
 		logging.info(f"Hyperlinks are ready - %s" % (SecToTime(time.time() - StartTime)))
 	
+    #find entertainment variants rs
+	if Filtering == "no":
+		rs_to_find = pandas.read_excel("/storage2/gskoksharova/exoclasma/pipe/ТЗ rs.xlsx")
+		rs_found = pandas.merge(Result["avsnp150"], rs_to_find, how="inner")
+    
 	# Save result
 	StartTime = time.time()
 	Result = Result[Config["FinalVariant"]]
@@ -595,7 +600,10 @@ def AnnoFit(
 			GenesTable.to_excel(Writer, "Genes", index=False)
 			Writer.save()
 	else:
-		Result.to_csv(OutputXLSX, sep='\t', index=False)
+		with pandas.ExcelWriter(OutputXLSX) as Writer:
+			Result.to_excel(Writer, "Variants", index=False)
+			rs_found.to_excel(Writer, "Ent variants found", index=False)
+			Writer.save()
 	
 	logging.info(f"Files saved - %s" % (SecToTime(time.time() - StartTime)))
 	logging.info(f"{MODULE_NAME} finish - %s" % (SecToTime(time.time() - GlobalTime)))
