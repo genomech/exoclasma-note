@@ -684,7 +684,6 @@ def CreateParser():
 	return Parser
 
 def main():
-	print ("In, argv",sys.argv)
 	Parser = CreateParser()
 	Namespace = Parser.parse_args(sys.argv[1:])
 	AnnoPipe(Namespace.annovar, Namespace.units, "no" if Namespace.nofilter else "full", Namespace.genome)
