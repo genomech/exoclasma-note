@@ -614,7 +614,6 @@ def AnnoPipe(
 		AnnovarFolder: str,
 		UnitsFile: str,
 		Filtering: str, Genome) -> None:
-	print ("I am here")
 	DaemonicConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'DaemonicPipeline_config.json'), 'rt'))
 	AnnofitConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'AnnoFit_config.json'), 'rt'))
 	
