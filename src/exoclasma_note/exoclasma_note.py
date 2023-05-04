@@ -614,6 +614,7 @@ def AnnoPipe(
 		AnnovarFolder: str,
 		UnitsFile: str,
 		Filtering: str, Genome) -> None:
+	print ("I am here")
 	DaemonicConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'DaemonicPipeline_config.json'), 'rt'))
 	AnnofitConf = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'AnnoFit_config.json'), 'rt'))
 	
@@ -627,7 +628,7 @@ def AnnoPipe(
 	Unit['HGMDPath'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), DaemonicConf['HGMDPath'])
 	Unit['AnnoFit'] = AnnofitConf
 	Unit['Output']['AnnovarTable'] = f'_temp.{Unit["ID"]}.annovar.tsv'
-	Unit['Output']['VariantsTable'] = {'full': f'{Unit["ID"]}.variants.xlsx', 'no': f'{Unit["ID"]}.variants.unfiltered.tsv'}[Filtering]
+	Unit['Output']['VariantsTable'] = {'full': f'{Unit["ID"]}.variants.xlsx', 'no': f'{Unit["ID"]}.variants.unfiltered.xlsx'}[Filtering]
 	json.dump(Unit, open(UnitsFile, 'wt'), indent = 4, ensure_ascii = False)
 	
 	StageAlias = 'Annovar'
@@ -684,6 +685,7 @@ def CreateParser():
 	return Parser
 
 def main():
+	print ("In, argv",sys.argv)
 	Parser = CreateParser()
 	Namespace = Parser.parse_args(sys.argv[1:])
 	AnnoPipe(Namespace.annovar, Namespace.units, "no" if Namespace.nofilter else "full", Namespace.genome)
